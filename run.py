@@ -7,4 +7,4 @@ tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
 distilbert_model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased', num_labels=4)
 bert_model = distilbert_model.to(device)
 
-Train.Train_model(bert_model,tokenizer,'esgn_dataset.xlsx')
+Train.Train_model(bert_model,tokenizer,'esgn_dataset.xlsx',device)

@@ -30,7 +30,7 @@ from torch.nn import CrossEntropyLoss, MSELoss
 from transformers import BertConfig
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 
-def cleaning(path):
+def cleaning(path,test_size, random_state):
     data = pd.read_excel(path)
     ori_text = data['ESGN'].values
 
@@ -72,7 +72,7 @@ def cleaning(path):
     sentences = data['ESGN'].values
     labels = data['class'].values
     
-    stratified_splitter = StratifiedShuffleSplit(n_splits=1, test_size=0.1, random_state=69)
+    stratified_splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state= random_state)
     train_indices, val_indices = next(stratified_splitter.split(sentences, labels, ori_text))
     
     # Split the data based on the indices obtained from stratified sampling
@@ -87,11 +87,11 @@ def cleaning(path):
 
 
 
-def Train_model(bert_model,tokenizer, file_path,batch_size = 8,
+def Train_model(bert_model,tokenizer,device, file_path,batch_size = 8,
                 shuffle = True, lr = 1e-5, num_epochs = 100,
                 T_0 = 10, T_mult=2, eta_min = 1e-6,
-                model_save_path = f'/model', early_stop_epoch = 8):
-    train_text,val_text,train_labels,val_labels,train_ori_text,val_ori_text = cleaning(file_path)
+                model_save_path = f'/model/trained_model', early_stop_epoch = 8, return_result = False, test_size = 0.1,random_state = 69):
+    train_text,val_text,train_labels,val_labels,train_ori_text,val_ori_text = cleaning(file_path,test_size, random_state)
     best_model = None
     
     # tokenize the text data
@@ -203,7 +203,7 @@ def Train_model(bert_model,tokenizer, file_path,batch_size = 8,
                 # Save the model
                 bert_model.save_pretrained(model_save_path)
                 tokenizer.save_pretrained(model_save_path)
-                best_model = model
+                best_model = bert_model
             else:
                 # Check for early stopping
                 if epoch - best_epoch >= early_stop_epoch:
